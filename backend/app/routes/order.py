@@ -12,16 +12,21 @@ from app.utils.auth_dependency import get_current_user
 router = APIRouter()
 
 
+def apply_owner_scope(query, current_user):
+    if current_user["role"] == "owner":
+        return query.filter(Outlet.owner_id == current_user["user_id"])
+
+    return query
+
+
 @router.post("/")
 def create_order(
     order: OrderCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    outlet = db.query(Outlet).filter(
-        Outlet.id == order.outlet_id,
-        Outlet.owner_id == current_user["user_id"]
-    ).first()
+    outlet_query = db.query(Outlet).filter(Outlet.id == order.outlet_id)
+    outlet = apply_owner_scope(outlet_query, current_user).first()
 
     if not outlet:
         raise HTTPException(
@@ -84,9 +89,8 @@ def get_orders(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    orders = db.query(Order).join(Outlet).filter(
-        Outlet.owner_id == current_user["user_id"]
-    ).all()
+    query = db.query(Order).join(Outlet)
+    orders = apply_owner_scope(query, current_user).all()
 
     return orders
 
@@ -95,18 +99,18 @@ def get_order_summary(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    total_orders = db.query(Order).join(Outlet).filter(
-        Outlet.owner_id == current_user["user_id"]
+    base_query = db.query(Order).join(Outlet)
+
+    total_orders = apply_owner_scope(base_query, current_user).count()
+
+    pending_orders = apply_owner_scope(
+        base_query.filter(Order.status == "pending"),
+        current_user
     ).count()
 
-    pending_orders = db.query(Order).join(Outlet).filter(
-        Outlet.owner_id == current_user["user_id"],
-        Order.status == "pending"
-    ).count()
-
-    completed_orders = db.query(Order).join(Outlet).filter(
-        Outlet.owner_id == current_user["user_id"],
-        Order.status == "completed"
+    completed_orders = apply_owner_scope(
+        base_query.filter(Order.status == "completed"),
+        current_user
     ).count()
 
     return {
@@ -121,7 +125,7 @@ def get_top_selling_items(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    items = db.query(
+    query = db.query(
         MenuItem.name,
         func.sum(OrderItem.quantity).label("total_quantity"),
         func.sum(OrderItem.subtotal).label("total_sales")
@@ -134,9 +138,9 @@ def get_top_selling_items(
     ).join(
         Outlet,
         Outlet.id == Order.outlet_id
-    ).filter(
-        Outlet.owner_id == current_user["user_id"]
-    ).group_by(
+    )
+
+    items = apply_owner_scope(query, current_user).group_by(
         MenuItem.name
     ).order_by(
         func.sum(OrderItem.quantity).desc()
@@ -158,11 +162,12 @@ def get_order_by_id(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    order = db.query(Order).join(Outlet).filter(
+    query = db.query(Order).join(Outlet).filter(
         Order.id == id,
-        Order.outlet_id == Outlet.id,
-        Outlet.owner_id == current_user["user_id"]
-    ).first()
+        Order.outlet_id == Outlet.id
+    )
+
+    order = apply_owner_scope(query, current_user).first()
 
     if not order:
         raise HTTPException(
@@ -178,10 +183,8 @@ def get_order_items(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    order = db.query(Order).join(Outlet).filter(
-        Order.id == id,
-        Outlet.owner_id == current_user["user_id"]
-    ).first()
+    query = db.query(Order).join(Outlet).filter(Order.id == id)
+    order = apply_owner_scope(query, current_user).first()
 
     if not order:
         raise HTTPException(
@@ -221,11 +224,12 @@ def update_order_by_id(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    order = db.query(Order).join(Outlet).filter(
+    query = db.query(Order).join(Outlet).filter(
         Order.id == id,
-        Order.outlet_id == Outlet.id,
-        Outlet.owner_id == current_user["user_id"]
-    ).first()
+        Order.outlet_id == Outlet.id
+    )
+
+    order = apply_owner_scope(query, current_user).first()
 
     if not order:
         raise HTTPException(
@@ -250,11 +254,12 @@ def delete_order_by_id(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    order = db.query(Order).join(Outlet).filter(
+    query = db.query(Order).join(Outlet).filter(
         Order.id == id,
-        Order.outlet_id == Outlet.id,
-        Outlet.owner_id == current_user["user_id"]
-    ).first()
+        Order.outlet_id == Outlet.id
+    )
+
+    order = apply_owner_scope(query, current_user).first()
 
     if not order:
         raise HTTPException(
@@ -275,11 +280,12 @@ def complete_order(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    order = db.query(Order).join(Outlet).filter(
+    query = db.query(Order).join(Outlet).filter(
         Order.id == id,
-        Order.outlet_id == Outlet.id,
-        Outlet.owner_id == current_user["user_id"]
-    ).first()
+        Order.outlet_id == Outlet.id
+    )
+
+    order = apply_owner_scope(query, current_user).first()
 
     if not order:
         raise HTTPException(

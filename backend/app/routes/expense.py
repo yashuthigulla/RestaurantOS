@@ -5,8 +5,6 @@ from sqlalchemy import func
 from app.database import get_db
 from app.models import Expense, Outlet
 from app.schemas import ExpenseCreate
-from app.utils.auth_dependency import get_current_user
-
 from app.utils.auth_dependency import require_owner
 
 
@@ -17,7 +15,7 @@ router = APIRouter()
 def create_expense(
     expense: ExpenseCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     outlet = db.query(Outlet).filter(
         Outlet.id == expense.outlet_id,
@@ -53,7 +51,7 @@ def create_expense(
 @router.get("/")
 def get_expenses(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     expenses = db.query(Expense).join(Outlet).filter(
         Outlet.owner_id == current_user["user_id"]
@@ -64,7 +62,7 @@ def get_expenses(
 @router.get("/summary")
 def get_expense_summary(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     total = db.query(
         func.sum(Expense.amount)
@@ -79,7 +77,7 @@ def get_expense_summary(
 @router.get("/category-summary")
 def get_category_summary(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     summary = db.query(
         Expense.category,
@@ -101,7 +99,7 @@ def get_category_summary(
 def get_expense_by_id(
     id:int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
    
 ):
     expense = db.query(Expense).join(Outlet).filter(
@@ -123,7 +121,7 @@ def update_expense_by_id(
     id: int,
     expense_data: ExpenseCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     expense = db.query(Expense).join(Outlet).filter(
         Expense.id == id,
@@ -150,7 +148,7 @@ def update_expense_by_id(
 def delete_expense_by_id(
     id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     expense = db.query(Expense).join(Outlet).filter(
         Expense.id == id,

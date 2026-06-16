@@ -6,6 +6,7 @@ import {
   LogOut,
   UtensilsCrossed,
   ClipboardList,
+  FileText,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -20,47 +21,54 @@ function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-slate-950 text-white min-h-screen p-6">
-      <h1 className="text-2xl font-bold mb-10">RestaurantOS</h1>
+    <aside className="w-20 shrink-0 bg-slate-950 text-white min-h-screen p-3 md:w-64 md:p-6">
+      <h1 className="mb-8 text-center text-lg font-bold md:mb-10 md:text-left md:text-2xl">
+        <span className="md:hidden">ROS</span>
+        <span className="hidden md:inline">RestaurantOS</span>
+      </h1>
 
       <nav className="flex flex-col gap-2">
         {role !== "cashier" && (
           <>
-            <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800" to="/dashboard">
-              <LayoutDashboard size={18} /> Dashboard
+            <Link className="flex items-center justify-center gap-3 p-3 rounded-lg hover:bg-slate-800 md:justify-start" to="/dashboard">
+              <LayoutDashboard size={18} /> <span className="hidden md:inline">Dashboard</span>
             </Link>
 
-            <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800" to="/outlets">
-              <Store size={18} /> Outlets
+            <Link className="flex items-center justify-center gap-3 p-3 rounded-lg hover:bg-slate-800 md:justify-start" to="/outlets">
+              <Store size={18} /> <span className="hidden md:inline">Outlets</span>
             </Link>
 
-            <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800" to="/menu">
-              <UtensilsCrossed size={18} /> Menu
+            <Link className="flex items-center justify-center gap-3 p-3 rounded-lg hover:bg-slate-800 md:justify-start" to="/menu">
+              <UtensilsCrossed size={18} /> <span className="hidden md:inline">Menu</span>
             </Link>
 
-            <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800" to="/expenses">
-              <Receipt size={18} /> Expenses
+            <Link className="flex items-center justify-center gap-3 p-3 rounded-lg hover:bg-slate-800 md:justify-start" to="/expenses">
+              <Receipt size={18} /> <span className="hidden md:inline">Expenses</span>
             </Link>
 
-            <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800" to="/revenues">
-              <IndianRupee size={18} /> Revenue
+            <Link className="flex items-center justify-center gap-3 p-3 rounded-lg hover:bg-slate-800 md:justify-start" to="/revenues">
+              <IndianRupee size={18} /> <span className="hidden md:inline">Revenue</span>
+            </Link>
+
+            <Link className="flex items-center justify-center gap-3 p-3 rounded-lg hover:bg-slate-800 md:justify-start" to="/orders">
+              <ClipboardList size={18} /> <span className="hidden md:inline">Orders</span>
+            </Link>
+
+            <Link className="flex items-center justify-center gap-3 p-3 rounded-lg hover:bg-slate-800 md:justify-start" to="/bills">
+              <FileText size={18} /> <span className="hidden md:inline">Bills</span>
             </Link>
           </>
         )}
 
-        <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800" to="/pos">
-          <UtensilsCrossed size={18} /> POS
-        </Link>
-
-        <Link className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800" to="/orders">
-          <ClipboardList size={18} /> Orders
+        <Link className="flex items-center justify-center gap-3 p-3 rounded-lg hover:bg-slate-800 md:justify-start" to="/pos">
+          <UtensilsCrossed size={18} /> <span className="hidden md:inline">POS</span>
         </Link>
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 p-3 rounded-lg text-red-400 hover:bg-red-950 mt-8"
+          className="mt-8 flex items-center justify-center gap-3 rounded-lg p-3 text-red-400 hover:bg-red-950 md:justify-start"
         >
-          <LogOut size={18} /> Logout
+          <LogOut size={18} /> <span className="hidden md:inline">Logout</span>
         </button>
       </nav>
     </aside>

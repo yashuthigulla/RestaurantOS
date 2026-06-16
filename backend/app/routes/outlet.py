@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Outlet
 from app.schemas import OutletCreate
-from app.utils.auth_dependency import get_current_user
-
+from app.utils.auth_dependency import require_owner
 
 router = APIRouter()
 
@@ -14,7 +13,7 @@ router = APIRouter()
 def create_outlet(
     outlet: OutletCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     new_outlet = Outlet(
         name=outlet.name,
@@ -36,7 +35,7 @@ def create_outlet(
 @router.get("/")
 def get_outlets(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     outlets = db.query(Outlet).filter(
         Outlet.owner_id == current_user["user_id"]
@@ -49,7 +48,7 @@ def get_outlets(
 def get_outlet_by_id(
     id:int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
    
 ):
     outlet = db.query(Outlet).filter(
@@ -70,7 +69,7 @@ def update_outlet_by_id(
     id: int,
     outlet_data: OutletCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     outlet = db.query(Outlet).filter(
         Outlet.id == id,
@@ -95,7 +94,7 @@ def update_outlet_by_id(
 def del_by_id(
     id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     outlet = db.query(Outlet).filter(
         Outlet.id == id,

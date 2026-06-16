@@ -5,6 +5,7 @@ from app.database import get_db
 from app.models import Bill, Order, Outlet
 from app.schemas import BillCreate
 from app.utils.auth_dependency import get_current_user
+from app.utils.auth_dependency import require_owner
 
 from fastapi.responses import FileResponse
 from reportlab.lib.pagesizes import A4
@@ -14,17 +15,25 @@ import os
 router = APIRouter()
 
 
+def apply_owner_scope(query, current_user):
+    if current_user["role"] == "owner":
+        return query.filter(Outlet.owner_id == current_user["user_id"])
+
+    return query
+
+
 @router.post("/generate")
 def generate_bill(
     bill_data: BillCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    order = db.query(Order).join(Outlet).filter(
+    query = db.query(Order).join(Outlet).filter(
         Order.id == bill_data.order_id,
-        Order.outlet_id == Outlet.id,
-        Outlet.owner_id == current_user["user_id"]
-    ).first()
+        Order.outlet_id == Outlet.id
+    )
+
+    order = apply_owner_scope(query, current_user).first()
 
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -52,13 +61,65 @@ def generate_bill(
 
     return bill
 
+
+@router.get("/")
+def get_bills(
+    db: Session = Depends(get_db),
+    current_user=Depends(require_owner)
+):
+    bills = db.query(
+        Bill.id,
+        Bill.order_id,
+        Bill.subtotal,
+        Bill.discount,
+        Bill.cgst,
+        Bill.sgst,
+        Bill.total_amount,
+        Bill.created_at,
+        Order.payment_method,
+        Order.outlet_id
+    ).join(
+        Order,
+        Bill.order_id == Order.id
+    ).join(
+        Outlet,
+        Order.outlet_id == Outlet.id
+    ).filter(
+        Outlet.owner_id == current_user["user_id"]
+    ).order_by(
+        Bill.created_at.desc()
+    ).all()
+
+    return [
+        {
+            "id": bill.id,
+            "order_id": bill.order_id,
+            "subtotal": bill.subtotal,
+            "discount": bill.discount,
+            "cgst": bill.cgst,
+            "sgst": bill.sgst,
+            "total_amount": bill.total_amount,
+            "created_at": bill.created_at,
+            "payment_method": bill.payment_method,
+            "outlet_id": bill.outlet_id
+        }
+        for bill in bills
+    ]
+
+
 @router.get("/{id}/pdf")
 def download_bill_pdf(
     id: int,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    bill = db.query(Bill).filter(Bill.id == id).first()
+    query = db.query(Bill).join(Order).join(Outlet).filter(
+        Bill.id == id,
+        Bill.order_id == Order.id,
+        Order.outlet_id == Outlet.id
+    )
+
+    bill = apply_owner_scope(query, current_user).first()
 
     if not bill:
         raise HTTPException(status_code=404, detail="Bill not found")

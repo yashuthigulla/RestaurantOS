@@ -4,8 +4,6 @@ from sqlalchemy import func
 
 from app.database import get_db
 from app.models import Outlet, Expense, Revenue
-from app.utils.auth_dependency import get_current_user
-
 from app.utils.auth_dependency import require_owner
 
 router = APIRouter()
@@ -14,7 +12,7 @@ router = APIRouter()
 @router.get("/")
 def get_dashboard(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     user_id = current_user["user_id"]
 

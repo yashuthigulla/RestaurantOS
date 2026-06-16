@@ -6,19 +6,23 @@ import Expenses from "../pages/Expenses";
 import Revenue from "../pages/Revenue";
 import ProtectedRoute from "./ProtectedRoutes";
 import Orders from "../pages/Orders";
-import  Menu  from "../pages/Menu";
+import Menu from "../pages/Menu";
 import POS from "../pages/POS";
+import Register from "../pages/Register";
+import NotFound from "../pages/NotFound";
+import Bills from "../pages/Bills";
 
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute ownerOnly>
               <Dashboard />
             </ProtectedRoute>
           }
@@ -27,7 +31,7 @@ function AppRoutes() {
         <Route
           path="/outlets"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute ownerOnly>
               <Outlets />
             </ProtectedRoute>
           }
@@ -36,7 +40,7 @@ function AppRoutes() {
         <Route
           path="/expenses"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute ownerOnly>
               <Expenses />
             </ProtectedRoute>
           }
@@ -45,36 +49,49 @@ function AppRoutes() {
         <Route
           path="/revenues"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute ownerOnly>
               <Revenue />
             </ProtectedRoute>
           }
         />
 
         <Route
- path="/menu"
- element={
-  <ProtectedRoute>
-   <Menu />
-  </ProtectedRoute>
- }
-/>
-<Route
-  path="/pos"
-  element={
-    <ProtectedRoute>
-      <POS />
-    </ProtectedRoute>
-  }
-/>
-<Route
- path="/orders"
- element={
-  <ProtectedRoute>
-   <Orders />
-  </ProtectedRoute>
- }
-/>
+          path="/menu"
+          element={
+            <ProtectedRoute ownerOnly>
+              <Menu />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/pos"
+          element={
+            <ProtectedRoute>
+              <POS />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute ownerOnly>
+              <Orders />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/bills"
+          element={
+            <ProtectedRoute ownerOnly>
+              <Bills />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

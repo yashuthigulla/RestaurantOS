@@ -5,8 +5,7 @@ from sqlalchemy import func
 from app.database import get_db
 from app.models import  Outlet,Revenue
 from app.schemas import  RevenueCreate
-from app.utils.auth_dependency import get_current_user
-
+from app.utils.auth_dependency import require_owner
 
 router = APIRouter()
 
@@ -15,7 +14,7 @@ router = APIRouter()
 def create_revenue(
     revenue: RevenueCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     outlet = db.query(Outlet).filter(
         Outlet.id == revenue.outlet_id,
@@ -54,7 +53,7 @@ def create_revenue(
 @router.get("/")
 def get_revenues(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     revenues = db.query(Revenue).join(Outlet).filter(
         Outlet.owner_id == current_user["user_id"]
@@ -65,7 +64,7 @@ def get_revenues(
 @router.get("/summary")
 def get_revenue_summary(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     total = db.query(
         func.sum(Revenue.amount)
@@ -80,7 +79,7 @@ def get_revenue_summary(
 @router.get("/source-summary")
 def get_source_summary(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     summary = db.query(
         Revenue.source,
@@ -101,7 +100,7 @@ def get_source_summary(
 @router.get("/monthly-summary")
 def get_monthly_revenue_summary(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     summary = db.query(
         func.date_format(Revenue.date, "%b").label("month"),
@@ -125,7 +124,7 @@ def get_monthly_revenue_summary(
 def get_revenue_by_id(
     id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     revenue = db.query(Revenue).join(Outlet).filter(
         Revenue.id == id,
@@ -146,7 +145,7 @@ def update_revenue_by_id(
     id: int,
     revenue_data: RevenueCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     revenue = db.query(Revenue).join(Outlet).filter(
         Revenue.id == id,
@@ -174,7 +173,7 @@ def update_revenue_by_id(
 def delete_revenue_by_id(
     id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_owner)
 ):
     revenue = db.query(Revenue).join(Outlet).filter(
         Revenue.id == id,

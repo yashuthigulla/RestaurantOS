@@ -1,15 +1,21 @@
 import { useState } from "react";
 import api from "../services/api";
-import {useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { LockKeyhole, Mail, Store } from "lucide-react";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
       const response = await api.post("/auth/login", {
@@ -20,42 +26,135 @@ function login() {
       localStorage.setItem("token", response.data.access_token);
       localStorage.setItem("role", response.data.role);
 
-if (response.data.role === "cashier") {
-  navigate("/pos");
-} else {
-  navigate("/dashboard");
-}
-
-alert("Login successful");
+      if (response.data.role === "cashier") {
+        navigate("/pos");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Login failed:", error);
+      setError("Invalid email or password");
+    } finally {
+      setIsLoading(false);
     }
   };
   
 
   return (
-    <div>
-      <h1>RestaurantOS Login</h1>
+    <div className="min-h-screen bg-slate-100 px-4 py-10 text-slate-900">
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center justify-center">
+        <div className="grid w-full overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-slate-200 lg:grid-cols-[1.05fr_0.95fr]">
+          <section className="hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col lg:justify-between">
+            <div>
+              <div className="mb-10 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500 text-slate-950">
+                <Store size={26} />
+              </div>
 
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+              <h1 className="max-w-md text-4xl font-bold leading-tight">
+                RestaurantOS keeps service, sales, and billing in one calm workspace.
+              </h1>
+            </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+            <div className="grid grid-cols-3 gap-3 text-sm">
+              <div className="rounded-lg bg-white/10 p-4">
+                <p className="text-2xl font-bold">POS</p>
+                <p className="mt-1 text-slate-300">Fast billing</p>
+              </div>
+              <div className="rounded-lg bg-white/10 p-4">
+                <p className="text-2xl font-bold">KPI</p>
+                <p className="mt-1 text-slate-300">Live insights</p>
+              </div>
+              <div className="rounded-lg bg-white/10 p-4">
+                <p className="text-2xl font-bold">PDF</p>
+                <p className="mt-1 text-slate-300">Bills ready</p>
+              </div>
+            </div>
+          </section>
 
-        <button type="submit">Login</button>
-      </form>
+          <section className="p-6 sm:p-10">
+            <div className="mb-8 flex items-center gap-3 lg:hidden">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950 text-white">
+                <Store size={22} />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">RestaurantOS</h1>
+                <p className="text-sm text-slate-500">Management & POS</p>
+              </div>
+            </div>
+
+            <div className="mx-auto max-w-md">
+              <div className="mb-8">
+                <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">
+                  Welcome back
+                </p>
+                <h2 className="mt-2 text-3xl font-bold">Sign in to continue</h2>
+                <p className="mt-2 text-slate-500">
+                  Access your dashboard or jump straight into POS mode.
+                </p>
+              </div>
+
+              {error && (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleLogin} className="space-y-4">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">
+                    Email
+                  </span>
+                  <div className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-100">
+                    <Mail size={18} className="text-slate-400" />
+                    <input
+                      type="email"
+                      placeholder="owner@restaurant.com"
+                      className="w-full py-3 outline-none"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">
+                    Password
+                  </span>
+                  <div className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-100">
+                    <LockKeyhole size={18} className="text-slate-400" />
+                    <input
+                      type="password"
+                      placeholder="Enter password"
+                      className="w-full py-3 outline-none"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full rounded-xl bg-slate-950 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                >
+                  {isLoading ? <LoadingSpinner label="Signing in" /> : "Login"}
+                </button>
+              </form>
+
+              <p className="mt-6 text-center text-sm text-slate-500">
+                Don't have an account?{" "}
+                <Link to="/register" className="font-semibold text-emerald-700 hover:text-emerald-800">
+                  Create account
+                </Link>
+              </p>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
-  );
+);
 }
 
 export default login;
