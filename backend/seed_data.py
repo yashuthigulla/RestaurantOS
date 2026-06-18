@@ -165,10 +165,9 @@ payment_methods = [
 
 start_date = datetime.now() - timedelta(days=180)
 
-for day in range(180):
+for day in range(12,180):
     current_date = start_date + timedelta(days=day)
 
-    # Weekends slightly more busy
     if current_date.weekday() in [5, 6]:
         daily_orders = random.randint(10, 18)
     else:
@@ -187,40 +186,34 @@ for day in range(180):
         )
 
         db.add(order)
-        db.commit()
-        db.refresh(order)
+        db.flush()
 
         total = 0
 
         for _ in range(random.randint(1, 4)):
-            item = random.choice(db.query(MenuItem).all())
+            item = random.choice(created_items)
             qty = random.randint(1, 3)
             subtotal = item.price * qty
             total += subtotal
 
-            db.add(
-                OrderItem(
-                    order_id=order.id,
-                    menu_item_id=item.id,
-                    quantity=qty,
-                    subtotal=subtotal
-                )
-            )
+            db.add(OrderItem(
+                order_id=order.id,
+                menu_item_id=item.id,
+                quantity=qty,
+                subtotal=subtotal
+            ))
 
         order.total_amount = total
-        db.commit()
 
-        db.add(
-            Revenue(
-                title=f"Order #{order.id}",
-                amount=total,
-                source=random.choice(revenue_sources),
-                payment_method=payment_method,
-                outlet_id=outlet_id,
-                created_at=current_date,
-                date=current_date
-            )
-        )
+        db.add(Revenue(
+            title=f"Order #{order.id}",
+            amount=total,
+            source=random.choice(revenue_sources),
+            payment_method=payment_method,
+            outlet_id=outlet_id,
+            created_at=current_date,
+            date=current_date
+        ))
 
         subtotal = total
         discount = round(subtotal * random.choice([0, 0.03, 0.05, 0.1]), 2)
@@ -229,21 +222,15 @@ for day in range(180):
         sgst = round(taxable * 0.025, 2)
         final_total = round(taxable + cgst + sgst, 2)
 
-        db.add(
-            Bill(
-                order_id=order.id,
-                subtotal=subtotal,
-                discount=discount,
-                cgst=cgst,
-                sgst=sgst,
-                total_amount=final_total,
-                created_at=current_date
-            )
-        )
+        db.add(Bill(
+            order_id=order.id,
+            subtotal=subtotal,
+            discount=discount,
+            cgst=cgst,
+            sgst=sgst,
+            total_amount=final_total,
+            created_at=current_date
+        ))
 
-        db.commit()
-
-
-
-
-print("Seed data created successfully!")
+    db.commit()
+    print(f"Seeded day {day + 1}/180")
