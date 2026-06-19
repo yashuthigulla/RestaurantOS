@@ -1,19 +1,18 @@
 import { useState } from "react";
 import api from "../services/api";
 import { Link, useNavigate } from "react-router-dom";
-import { LockKeyhole, Mail, Store } from "lucide-react";
+import { LockKeyhole, Mail, Store, UserRound, BadgeDollarSign } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
 
-function login() {
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  
-  
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setError("");
     setIsLoading(true);
 
@@ -38,7 +37,37 @@ function login() {
       setIsLoading(false);
     }
   };
-  
+
+  const handleDemoLogin = async (role: "owner" | "cashier") => {
+    const demoEmail = role === "owner" ? "yash@gmail.com" : "cashier@gmail.com";
+    const demoPassword = "123456";
+
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await api.post("/auth/login", {
+        email: demoEmail,
+        password: demoPassword,
+      });
+
+      localStorage.setItem("token", response.data.access_token);
+      localStorage.setItem("role", response.data.role);
+
+      if (response.data.role === "cashier") {
+        navigate("/pos");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Demo login failed:", error);
+      setError("Demo login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-100 px-4 py-10 text-slate-900">
@@ -90,6 +119,38 @@ function login() {
                 <h2 className="mt-2 text-3xl font-bold">Sign in to continue</h2>
                 <p className="mt-2 text-slate-500">
                   Access your dashboard or jump straight into POS mode.
+                </p>
+              </div>
+
+              <div className="mb-5 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+                <p className="mb-3 text-sm font-semibold text-emerald-800">
+                  Demo Access
+                </p>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin("owner")}
+                    disabled={isLoading}
+                    className="flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  >
+                    <UserRound size={16} />
+                    Use Owner Demo
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin("cashier")}
+                    disabled={isLoading}
+                    className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                  >
+                    <BadgeDollarSign size={16} />
+                    Use Cashier Demo
+                  </button>
+                </div>
+
+                <p className="mt-3 text-xs text-emerald-700">
+                  Recruiters can explore dashboard analytics, POS billing, and PDF bill generation instantly.
                 </p>
               </div>
 
@@ -145,7 +206,10 @@ function login() {
 
               <p className="mt-6 text-center text-sm text-slate-500">
                 Don't have an account?{" "}
-                <Link to="/register" className="font-semibold text-emerald-700 hover:text-emerald-800">
+                <Link
+                  to="/register"
+                  className="font-semibold text-emerald-700 hover:text-emerald-800"
+                >
                   Create account
                 </Link>
               </p>
@@ -154,7 +218,7 @@ function login() {
         </div>
       </div>
     </div>
-);
+  );
 }
 
-export default login;
+export default Login;
