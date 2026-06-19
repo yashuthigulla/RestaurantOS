@@ -139,8 +139,8 @@ function Orders() {
     <div className="flex min-h-screen">
       <Sidebar />
 
-      <div className="flex-1 bg-slate-100 p-8">
-        <div className="flex justify-between items-center mb-6">
+      <div className="min-w-0 flex-1 bg-slate-100 p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Orders</h1>
             <p className="text-slate-500 mt-1">
@@ -148,26 +148,87 @@ function Orders() {
             </p>
           </div>
 
-           <div className="flex gap-3">
+           <div className="flex flex-col gap-3 sm:flex-row">
 
           <button
             onClick={() => exportToCSV("orders.csv", orders)}
-            className="bg-slate-900 text-white px-4 py-2 rounded-lg"
+            className="rounded-lg bg-slate-900 px-4 py-2 text-white"
           >
             Export CSV
           </button>
 
           <button
             onClick={() => setShowModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
             Create Order
           </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <table className="w-full">
+        <div className="space-y-4 md:hidden">
+          {orders.map((order) => (
+            <article key={order.id} className="rounded-2xl bg-white p-4 shadow-sm">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm text-slate-500">Order #{order.id}</p>
+                  <h2 className="text-lg font-bold text-green-600">
+                    &#8377;{order.total_amount}
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {order.payment_method} - Outlet {order.outlet_id}
+                  </p>
+                </div>
+
+                <span
+                  className={`shrink-0 rounded-full px-3 py-1 text-sm font-medium ${
+                    order.status === "completed"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {order.status}
+                </span>
+              </div>
+
+              <div className="grid gap-2">
+                {order.status !== "completed" && (
+                  <button
+                    onClick={() => completeOrder(order.id)}
+                    className="rounded bg-green-600 px-3 py-2 text-white"
+                  >
+                    Complete
+                  </button>
+                )}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => deleteOrder(order.id)}
+                    className="rounded bg-red-600 px-3 py-2 text-white"
+                  >
+                    Delete
+                  </button>
+
+                  <button
+                    onClick={() => viewOrderItems(order.id)}
+                    className="rounded bg-blue-600 px-3 py-2 text-white"
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+
+          {orders.length === 0 && (
+            <div className="rounded-2xl bg-white p-6 text-center text-slate-500 shadow-sm">
+              No orders found.
+            </div>
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto rounded-2xl bg-white shadow-sm md:block">
+          <table className="w-full min-w-[820px]">
             <thead className="bg-slate-900 text-white">
               <tr>
                 <th className="p-4 text-left">ID</th>
@@ -243,8 +304,8 @@ function Orders() {
         </div>
 
         {showModal && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-xl w-[600px] shadow-lg">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-5 shadow-lg sm:p-6">
               <h2 className="text-xl font-bold mb-4">Create Order</h2>
 
               <form onSubmit={createOrder}>
@@ -276,16 +337,16 @@ function Orders() {
                     <button
                       type="button"
                       onClick={addItemRow}
-                      className="bg-slate-900 text-white px-3 py-1 rounded"
+                      className="rounded bg-slate-900 px-3 py-1 text-white"
                     >
                       Add Item
                     </button>
                   </div>
 
                   {selectedItems.map((item, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-3 mb-3">
+                    <div key={index} className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-12">
                       <select
-                        className="col-span-7 border p-2 rounded"
+                        className="rounded border p-2 sm:col-span-7"
                         value={item.menu_item_id}
                         onChange={(e) =>
                           updateItem(
@@ -306,7 +367,7 @@ function Orders() {
                       </select>
 
                       <input
-                        className="col-span-3 border p-2 rounded"
+                        className="rounded border p-2 sm:col-span-3"
                         type="number"
                         min="1"
                         value={item.quantity}
@@ -318,7 +379,7 @@ function Orders() {
                       <button
                         type="button"
                         onClick={() => removeItemRow(index)}
-                        className="col-span-2 bg-red-600 text-white rounded"
+                        className="rounded bg-red-600 py-2 text-white sm:col-span-2"
                       >
                         X
                       </button>
@@ -333,10 +394,10 @@ function Orders() {
                   </h3>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                   >
                     Save Order
                   </button>
@@ -347,7 +408,7 @@ function Orders() {
                       setShowModal(false);
                       setSelectedItems([]);
                     }}
-                    className="px-4 py-2 rounded border"
+                    className="rounded border px-4 py-2"
                   >
                     Cancel
                   </button>
@@ -357,11 +418,12 @@ function Orders() {
           </div>
         )}
         {showItemsModal && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-xl w-[600px] shadow-lg">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-5 shadow-lg sm:p-6">
               <h2 className="text-xl font-bold mb-4">Order Items</h2>
 
-              <table className="w-full">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[520px]">
                 <thead>
                   <tr className="border-b">
                     <th className="text-left p-2">Item</th>
@@ -384,6 +446,7 @@ function Orders() {
                   ))}
                 </tbody>
               </table>
+              </div>
 
               <div className="mt-6">
                 <button

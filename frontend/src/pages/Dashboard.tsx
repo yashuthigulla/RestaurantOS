@@ -101,16 +101,16 @@ function Dashboard() {
     <div className="flex min-h-screen bg-slate-100">
       <Sidebar />
 
-      <main className="flex-1 p-8">
-        <div className="flex justify-between items-center mb-8">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">Dashboard</h1>
             <p className="text-slate-500 mt-1">
               Track revenue, expenses, and profit across your outlets.
             </p>
           </div>
 
-          <div className="bg-white px-4 py-3 rounded-xl shadow-sm text-sm text-slate-600">
+          <div className="w-fit rounded-xl bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
             Restaurant Owner
           </div>
         </div>
@@ -138,10 +138,11 @@ function Dashboard() {
     </div>
   </div>
 )}
-<div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 mb-8">
+<div className="mb-8 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6">
   <h2 className="text-xl font-bold mb-4">Top Selling Menu Items</h2>
 
-  <table className="w-full">
+  <div className="overflow-x-auto">
+  <table className="w-full min-w-[520px]">
     <thead>
       <tr className="text-left text-slate-500 border-b">
         <th className="pb-3">Item</th>
@@ -162,6 +163,7 @@ function Dashboard() {
       ))}
     </tbody>
   </table>
+  </div>
 </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
@@ -208,7 +210,7 @@ function Dashboard() {
           <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
             <h2 className="text-xl font-bold mb-4">Expense Category Breakdown</h2>
 
-            <div className="h-80">
+            <div className="h-64 sm:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -235,7 +237,7 @@ function Dashboard() {
           <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
             <h2 className="text-xl font-bold mb-4">Revenue Source Breakdown</h2>
 
-            <div className="h-80">
+            <div className="h-64 sm:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={sourceData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -252,7 +254,7 @@ function Dashboard() {
         <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
           <h2 className="text-xl font-bold mb-4">Monthly Revenue Trend</h2>
 
-          <div className="h-80">
+          <div className="h-64 sm:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyRevenue}>
                 <CartesianGrid strokeDasharray="3 3" />

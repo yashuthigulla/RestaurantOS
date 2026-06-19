@@ -83,29 +83,64 @@ function Expenses() {
     <div className="flex min-h-screen">
       <Sidebar />
 
-      <div className="flex-1 bg-gray-100 p-8">
-        <div className="flex justify-between items-center mb-6">
+      <div className="min-w-0 flex-1 bg-gray-100 p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
   <h1 className="text-3xl font-bold">Expenses</h1>
 
-  <div className="flex gap-3">
+  <div className="flex flex-col gap-3 sm:flex-row">
     <button
       onClick={() => exportToCSV("expenses.csv", expenses)}
-      className="bg-slate-900 text-white px-4 py-2 rounded-lg"
+      className="rounded-lg bg-slate-900 px-4 py-2 text-white"
     >
       Export CSV
     </button>
 
     <button
       onClick={() => setShowModal(true)}
-      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+      className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
     >
       Add Expense
     </button>
   </div>
 </div>
 
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          <table className="w-full">
+        <div className="space-y-4 md:hidden">
+          {expenses.map((expense) => (
+            <article key={expense.id} className="rounded-xl bg-white p-4 shadow">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-500">Expense #{expense.id}</p>
+                  <h2 className="truncate text-lg font-bold">{expense.title}</h2>
+                  <p className="mt-1 text-sm text-gray-600">
+                    {expense.category} - Outlet {expense.outlet_id}
+                  </p>
+                </div>
+
+                <p className="shrink-0 font-semibold text-red-600">
+                  &#8377;{expense.amount}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => startEditExpense(expense)}
+                  className="rounded bg-yellow-500 px-3 py-2 text-white"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => deleteExpense(expense.id)}
+                  className="rounded bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="hidden overflow-x-auto rounded-xl bg-white shadow md:block">
+          <table className="w-full min-w-[820px]">
             <thead className="bg-gray-900 text-white">
               <tr>
                 <th className="p-4 text-left">ID</th>
@@ -149,8 +184,8 @@ function Expenses() {
         </div>
 
         {showModal && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-xl w-96 shadow-lg">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-lg">
               <h2 className="text-xl font-bold mb-4">
   {editId ? "Edit Expense" : "Add Expense"}
 </h2>
@@ -186,10 +221,10 @@ function Expenses() {
                   onChange={(e) => setOutletId(e.target.value)}
                 />
 
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
                   <button
                     type="submit"
-                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                    className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
                   >
                     Save
                   </button>
@@ -197,7 +232,7 @@ function Expenses() {
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 rounded border"
+                    className="rounded border px-4 py-2"
                   >
                     Cancel
                   </button>
