@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { LockKeyhole, Mail, Store, UserRound, BadgeDollarSign } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
 
-function Login() {
+function login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -221,4 +221,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default login;
